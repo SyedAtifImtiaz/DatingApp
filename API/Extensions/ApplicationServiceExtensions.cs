@@ -16,6 +16,8 @@ public static class ApplicationServiceExtensions
 
         services.AddCors(); // allow app to access
         services.AddScoped<ITokenService, TokenService>(); // initialize token service 
+        services.AddScoped<IUserRepository, UserRepository>(); // initialize i user repository, scoped to the level of http request, injectable to the user controller
+        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         return services;
     }
