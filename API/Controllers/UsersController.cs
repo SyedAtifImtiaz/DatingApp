@@ -1,8 +1,7 @@
-﻿using System.Security.Claims;
-using System.Xml.XPath;
-using API.DTOs;
+﻿using API.DTOs;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -12,18 +11,11 @@ namespace API.Controllers;
 
 [Authorize]
 public class UsersController : BaseApiController
-{
-    //private readonly DataContext _context;
+{   
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly IPhotoService _photoService;
-
-    // commented out due to IRepository Pattern
-    // public UsersController(DataContext context) // context is scope with http request and return http response and later this context is disposed
-    // {
-    //     this._context = context;
-    // }
-
+    
     public UsersController(IUserRepository userRepository, IMapper mapper, 
         IPhotoService photoService)
     {
@@ -33,39 +25,26 @@ public class UsersController : BaseApiController
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
+    public async Task<ActionResult<PagedList<MemberDto>>> GetUsers([FromQuery]UserParams userParams)
     {
-        //var users = await _context.Users.ToListAsync();
-        //return users;
+        var currentUser = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
+        userParams.CurrentUsername = currentUser.UserName;
 
-        //return Ok(await _userRepository.GetUsersAsync());
+        if(string.IsNullOrEmpty(userParams.Gender))
+        {
+            userParams.Gender = currentUser.Gender == "male" ? "female" : "male";
+        }
 
-        // var users = await _userRepository.GetUsersAsync();
+        var users = await _userRepository.GetMembersAsync(userParams);
 
-        // var usersToReturn = _mapper.Map<IEnumerable<MemberDto>>(users);
-
-        // return Ok(usersToReturn);
-
-        var users = await _userRepository.GetMembersAsync();
+        Response.AddPaginationHeader(new PaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages));
 
         return Ok(users);
     }
 
-    // [HttpGet("{id}")] // /api/users/2
-    // public async Task<ActionResult<AppUser>> GetUser(int id)
-    // {
-    //     return await _context.Users.FindAsync(id);
-    // }
-
     [HttpGet("{username}")] // /api/users/lisa
     public async Task<ActionResult<MemberDto>> GetUser(string username)
-    {
-        //return await _userRepository.GetUserByUsernameAsync(username);
-
-        //var user = await _userRepository.GetUserByUsernameAsync(username);
-
-        //return _mapper.Map<MemberDto>(user);
-
+    {        
         return await _userRepository.GetMemberAsync(username);
     }
 
@@ -159,3 +138,38 @@ public class UsersController : BaseApiController
         return BadRequest("Problem deleting photo");
     }
 }
+
+
+//return await _userRepository.GetUserByUsernameAsync(username);
+
+        //var user = await _userRepository.GetUserByUsernameAsync(username);
+
+        //return _mapper.Map<MemberDto>(user);
+
+
+
+    // [HttpGet("{id}")] // /api/users/2
+    // public async Task<ActionResult<AppUser>> GetUser(int id)
+    // {
+    //     return await _context.Users.FindAsync(id);
+    // }
+
+
+    //var users = await _context.Users.ToListAsync();
+        //return users;
+
+        //return Ok(await _userRepository.GetUsersAsync());
+
+        // var users = await _userRepository.GetUsersAsync();
+
+        // var usersToReturn = _mapper.Map<IEnumerable<MemberDto>>(users);
+
+        // return Ok(usersToReturn);
+
+
+        //private readonly DataContext _context;
+    // commented out due to IRepository Pattern
+    // public UsersController(DataContext context) // context is scope with http request and return http response and later this context is disposed
+    // {
+    //     this._context = context;
+    // }

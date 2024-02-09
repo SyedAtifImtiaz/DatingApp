@@ -20,7 +20,8 @@ var app = builder.Build();
 // }
 
 // Configure the HTTP request pipeline.
-app.UseMiddleware<ExceptionMiddleware>();
+// request going through the pipeline, before it gets to endpoint its going to occur for every single request that comes into our API
+app.UseMiddleware<ExceptionMiddleware>(); 
 
 app.UseCors(builder => builder.AllowAnyHeader().AllowAnyMethod()
     .WithOrigins("https://localhost:4200"));
