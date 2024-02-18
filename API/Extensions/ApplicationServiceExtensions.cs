@@ -2,6 +2,7 @@
 using API.Helpers;
 using API.Interfaces;
 using API.Services;
+using API.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Extensions;
@@ -24,6 +25,8 @@ public static class ApplicationServiceExtensions
         services.AddScoped<LogUserActivity>();
         services.AddScoped<ILikesRepository, LikesRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
+        services.AddSignalR();
+        services.AddSingleton<PresenceTracker>(); // we need this to live as long our application lives, we don't want this to destroyed once http request is completed
 
         return services;
     }
