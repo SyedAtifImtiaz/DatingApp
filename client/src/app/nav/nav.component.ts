@@ -24,7 +24,10 @@ export class NavComponent implements OnInit {
   // in case http request no need to unsubscribe
   login() {
     this.accountService.login(this.model).subscribe({
-      next: _ => this.router.navigateByUrl('/members')
+      next: _ => {
+        this.router.navigateByUrl('/members');
+        this.model = {};
+      }
     })
   }
 
